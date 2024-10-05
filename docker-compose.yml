@@ -11,7 +11,27 @@ services:
       - resource:resource
     volumes:
       - ./config/dispatcher:/config
+  migrations:
+    image: semtech/mu-migrations-service:0.6.0
+    links:
+      - virtuoso:database
+    environment:
+      MU_SPARQL_TIMEOUT: "300"
+    volumes:
+      - ./config/migrations:/data/migrations
+
   database:
+    image: semtech/sparql-parser:0.0.8
+    environment:
+      MU_SPARQL_ENDPOINT: "http://virtuoso:8890/sparql"
+      DATABASE_OVERLOAD_RECOVERY: "true"
+      DATABASE_COMPATIBILITY: "Virtuoso"
+      QUERY_MAX_PROCESSING_TIME: 605000
+      QUERY_MAX_EXECUTION_TIME: 605000
+    volumes:
+      - ./config/cl-authorization:/config
+      - ./data/mu-auth:/data
+  virtuoso:
     image: redpencil/virtuoso:1.2.0-rc.1
     environment:
       SPARQL_UPDATE: "true"
@@ -19,9 +39,24 @@ services:
     volumes:
       - ./data/db:/data
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
+  form-content:
+    image: lblod/form-content-service:0.0.7
+    volumes:
+      - ./config/form-content:/config
   resource:
     image: semtech/mu-cl-resources:1.25.0
     links:
       - database:database
     volumes:
       - ./config/resources:/config
+  login:
+    image: lblod/acmidm-login-service:0.12.0
+    environment:
+      MU_APPLICATION_AUTH_DISCOVERY_URL: "fake"
+      MU_APPLICATION_AUTH_CLIENT_ID: "fake"
+      LOG_SINK_URL: "http://sink"
+      MU_APPLICATION_AUTH_JWK_PRIVATE_KEY: /config/jwk_private_key.json
+      MU_APPLICATION_AUTH_USERID_CLAIM: vo_id
+      MU_APPLICATION_AUTH_REDIRECT_URI: "fake"
+    volumes:
+      - ./config/login:/config
