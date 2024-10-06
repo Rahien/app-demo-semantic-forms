@@ -1,3 +1,4 @@
+# TODO what?? a v1 form? Let's build our own v2 form using the form builder
 @prefix form: <http://lblod.data.gift/vocabularies/forms/>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix mu: <http://mu.semte.ch/vocabularies/core/>.
